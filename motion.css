@@ -1,0 +1,123 @@
+/* Hub Design motion, values from the Icons8 motion skill: hovers, presses, panels and entrances.
+   Only transform and opacity move; colors fade. Hover (tens a day): color and opacity at most 150ms, ease; motion on hover
+   gated to a real pointer. Press: scale .97-.98, 160ms ease-out. Things that retrigger use transitions, so they retarget
+   mid-flight instead of restarting. Keyboard-driven changes (canvas tool shortcuts, focus) do not animate.
+   --hd-m is the motion amount: 1 normally, 0 under reduced motion (fades stay, movement goes). */
+.hd,.hdd{
+  --hd-m:1;
+  --hd-ease-out:cubic-bezier(0.23,1,0.32,1);
+  --hd-ease-drawer:cubic-bezier(0.32,0.72,0,1);
+  --hd-hover:150ms;
+  --hd-press:160ms;
+}
+@media (prefers-reduced-motion:reduce){.hd,.hdd{--hd-m:0}}
+
+/* hover: colors and shadows fade instead of snapping */
+.hd-tab,.hd-plus,.hd-segb,.hd-who,.hd-cx,.hd-exit,
+.hdc-pages,.hdc-zoom,.hdc-more,.hdc-mi,.hdc-lb,.hdc-gx,.hdc-eb,
+.hdd-tab,.hdd-tool,.hdd-back,.hdd-need-b,
+.hds-cat,.hds-x,.hds-backb,.hds-pg,.hds-link,.hd-home,.hdcard-btn,.hdcard,.hdcard-file,.hdc-err,.hd-style-x{
+  transition:background-color var(--hd-hover) ease,color var(--hd-hover) ease,border-color var(--hd-hover) ease,box-shadow var(--hd-hover) ease,opacity var(--hd-hover) ease,filter var(--hd-hover) ease,transform var(--hd-press) var(--hd-ease-out);
+}
+/* canvas tools switch by shortcut (V, H, P...): their state changes at once, only the press moves */
+.hdc-tool{transition:transform var(--hd-press) var(--hd-ease-out)}
+/* icon buttons: the icon answers the pointer with a barely visible swell */
+:is(.hd-plus,.hd-exit,.hdc-tool,.hdc-more,.hdc-lb,.hdc-gx,.hdd-tool,.hdd-back,.hds-x,.hds-backb) :is(svg,.hdc-i){
+  transition:transform var(--hd-hover) ease;
+}
+/* project title: the hover underline fades in instead of snapping */
+.hd-home .hd-title{text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color var(--hd-hover) ease}
+.hd-home:hover .hd-title{text-decoration-color:currentColor}
+/* dashboard cards and folders: the shadow lifts with the card */
+.hdd-card,.hdd-folder{transition:box-shadow var(--hd-hover) ease,background-color var(--hd-hover) ease,border-color var(--hd-hover) ease,transform var(--hd-hover) ease}
+@media (hover:hover) and (pointer:fine){
+  :is(.hd-plus,.hd-exit,.hdc-tool,.hdc-more,.hdc-lb,.hdc-gx,.hdd-tool,.hdd-back,.hds-x,.hds-backb):hover :is(svg,.hdc-i){
+    transform:scale(calc(1 + var(--hd-m) * .06));
+  }
+  .hdd-card:hover,.hdd-folder:hover{transform:translateY(calc(var(--hd-m) * -2px))}
+  .hdd-files.list .hdd-card:hover,.hdd-folders.list .hdd-folder:hover{transform:none}
+}
+
+/* press: a small give under the pointer */
+.hd-tab:active,.hd-plus:active,.hd-segb:active,.hd-exit:active,.hd-home:active,
+.hdc-tool:active,.hdc-pages:active,.hdc-zoom:active,.hdc-more:active,.hdc-lb:active,.hdc-eb:active,.hdc-err:active,
+.hdd-tab:active,.hdd-tool:active,.hdd-back:active,.hdd-need-b:active,
+.hds-cat:active,.hds-backb:active,.hds-pg:active,.hdcard-btn:active{
+  transform:scale(calc(1 - var(--hd-m) * .03));
+}
+.hdd-card:active,.hdd-folder:active,.hdcard:active{transform:scale(calc(1 - var(--hd-m) * .02));transition-timing-function:ease,ease,ease,var(--hd-ease-out)}
+.hd .hd-style-w .hd-style-x{transition:background-color var(--hd-hover) ease,color var(--hd-hover) ease,scale var(--hd-press) var(--hd-ease-out)}
+.hd .hd-style-w .hd-style-x:active{scale:calc(1 - var(--hd-m) * .03)}
+/* preset and style cards give way under the pointer through their picture */
+.hdd-preset:active .hdd-art,.hds-card:active .hds-img{transform:scale(calc(1 - var(--hd-m) * .03));transition:box-shadow var(--hd-hover) ease,transform var(--hd-press) var(--hd-ease-out)}
+
+/* canvas menus grow from their button */
+.hdc-pop{transform-origin:top left;transition:opacity 160ms var(--hd-ease-out),transform 160ms var(--hd-ease-out)}
+.hdc-pop[style*="left: auto"]{transform-origin:top right}
+@starting-style{.hdc-pop{opacity:0;transform:translateY(calc(var(--hd-m) * -4px)) scale(calc(1 - var(--hd-m) * .03))}}
+
+/* comment editor opens at its pin */
+.hdc-ed{transform-origin:top left;transition:opacity 180ms var(--hd-ease-out),transform 180ms var(--hd-ease-out)}
+@starting-style{.hdc-ed{opacity:0;transform:translateY(calc(var(--hd-m) * 4px)) scale(calc(1 - var(--hd-m) * .03))}}
+
+/* properties panel slides in from the right edge */
+.hd-props{transition:opacity 220ms var(--hd-ease-drawer),transform 220ms var(--hd-ease-drawer)}
+@starting-style{.hd-props{opacity:0;transform:translateX(calc(var(--hd-m) * 12px))}}
+
+/* dashboard and style picker: full overlays fade in, and fade out over the canvas */
+.hdd,.hds{transition:opacity 200ms var(--hd-ease-out),display 160ms allow-discrete}
+.hdd[hidden],.hds[hidden]{opacity:0;pointer-events:none;transition-duration:160ms}
+@starting-style{.hdd,.hds{opacity:0}}
+
+/* dashboard cards rise in a short stagger each time the grid appears */
+@keyframes hd-rise{from{opacity:0;transform:translateY(calc(var(--hd-m) * 8px))}}
+.hdd-card,.hdd-folder{animation:hd-rise 260ms var(--hd-ease-out) backwards}
+:is(.hdd-card,.hdd-folder):nth-child(2){animation-delay:40ms}
+:is(.hdd-card,.hdd-folder):nth-child(3){animation-delay:80ms}
+:is(.hdd-card,.hdd-folder):nth-child(4){animation-delay:120ms}
+:is(.hdd-card,.hdd-folder):nth-child(5){animation-delay:160ms}
+:is(.hdd-card,.hdd-folder):nth-child(6){animation-delay:200ms}
+:is(.hdd-card,.hdd-folder):nth-child(7){animation-delay:240ms}
+:is(.hdd-card,.hdd-folder):nth-child(n+8){animation-delay:280ms}
+
+/* screenshot lightbox: backdrop fades, the picture settles from slightly smaller */
+.hdd-lb{transition:opacity 200ms var(--hd-ease-out)}
+@starting-style{.hdd-lb{opacity:0}}
+.hdd-lb-box{transition:opacity 240ms var(--hd-ease-out),transform 240ms var(--hd-ease-out)}
+@starting-style{.hdd-lb-box{opacity:0;transform:scale(calc(1 - var(--hd-m) * .04))}}
+
+/* style button: on hover a gradient spreads in a circle from the centre of the palette over the whole button (the circle's
+   centre and radius come from main.js, they depend on the label), the label turns white and the palette fills: the filled
+   Icons8 pair (icon-filled.svg) has holes, the gradient shows through them. The circle is a layer under the label. */
+.hd .hd-style{
+  --hd-pink:#d6307f;
+  position:relative;isolation:isolate;overflow:hidden;
+  transition:color 120ms ease 60ms,border-color var(--hd-hover) ease,transform var(--hd-press) var(--hd-ease-out);
+}
+.hd-style::before{
+  content:"";position:absolute;inset:-1px;z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,var(--hd-acc),var(--hd-pink),color-mix(in oklab,var(--hd-acc) 50%,var(--hd-pink)),var(--hd-acc)) 0 0/420px 100% repeat-x;
+  clip-path:circle(0px at var(--hd-cx,20px) var(--hd-cy,50%));
+  transition:clip-path 240ms var(--hd-ease-out);
+}
+.hd-style .hd-ic{position:relative;display:inline-flex}
+.hd-style .hd-ic::after{
+  content:"";position:absolute;inset:0;background:#fff;opacity:0;
+  -webkit-mask:url("icon-filled.svg") center/calc(var(--icon-size, 16px) * 20 / 16) calc(var(--icon-size, 16px) * 20 / 16) no-repeat;mask:url("icon-filled.svg") center/calc(var(--icon-size, 16px) * 20 / 16) calc(var(--icon-size, 16px) * 20 / 16) no-repeat;
+  transition:opacity 100ms ease;
+}
+.hd-style .hd-ic svg{transition:opacity 100ms ease}
+@media (hover:hover) and (pointer:fine){
+  .hd .hd-style-w:hover .hd-style{color:#fff;border-color:transparent;transition:color 120ms ease 90ms,border-color var(--hd-hover) ease,transform var(--hd-press) var(--hd-ease-out)}
+  .hd-style-w:hover .hd-style::before{
+    clip-path:circle(var(--hd-r,400px) at var(--hd-cx,20px) var(--hd-cy,50%));
+    animation:hd-sweep 3s linear infinite;
+    transition:clip-path 380ms var(--hd-ease-out);
+  }
+  .hd-style-w:hover .hd-style .hd-ic::after{opacity:1;transition-delay:40ms}
+  .hd-style-w:hover .hd-style .hd-ic svg{opacity:0;transition-delay:40ms}
+  .hd .hd-style-w:hover .hd-style-x{color:#fff}
+  .hd .hd-style-w:hover .hd-style-x:hover{background:rgb(255 255 255 / .2)}
+}
+@keyframes hd-sweep{to{background-position:420px 0}}
+@media (prefers-reduced-motion:reduce){.hd-style::before,.hd-style-w:hover .hd-style::before{transition:none;animation:none}}
